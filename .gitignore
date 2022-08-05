@@ -1,0 +1,9 @@
+.idea/
+.vscode/
+__pycache__/
+media/
+venv/
+logs/
+locust/.env
+*.log
+*.pid
