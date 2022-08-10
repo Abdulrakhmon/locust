@@ -69,7 +69,9 @@ class InsecticidesRemainderList(APIView):
     def get(self, request, format=None):
         year = f"{datetime.today().year}-01-01"
         insecticides_remainder_list = []
-        insecticide_remainder_dict = {"region": None, "insecticide_info": None, "insecticide_remainder": None}
+        insecticide_remainder_dict = {"region": None, "insecticide_info": None, "insecticide_remainder": None,
+                                      "spent_insecticide_amount": None, "sent_insecticide_amount": None,
+                                      "received_insecticide_amount": None}
 
         insecticides_yearly_remainders = InsecticidesYearlyRemainder.objects.filter(year=year)
 
@@ -78,51 +80,30 @@ class InsecticidesRemainderList(APIView):
         else:
             insecticides_yearly_remainders = insecticides_yearly_remainders.order_by('region')
 
-        test_list = []
-        test_dict = {'region': None, 'insecticides': []}
-        main_test_list = []
-        region = None
         for insecticides_yearly_remainder in insecticides_yearly_remainders:
             print('insecticides_yearly_remainder.region.name_ru')
             print(insecticides_yearly_remainder.region.name_ru)
-            spent_insecticides_amount = SpentInsecticide.objects.filter(insecticide=insecticides_yearly_remainder.insecticide,
+            insecticide_remainder_dict['spent_insecticide_amount'] = SpentInsecticide.objects.filter(insecticide=insecticides_yearly_remainder.insecticide,
                                                                         spray_monitoring_act__status=SprayMonitoringStatus.APPROVED,
                                                                         spray_monitoring_act__district__region=insecticides_yearly_remainder.region,
                                                                         spray_monitoring_act__given_date__gte=insecticides_yearly_remainder.year).aggregate(Sum('amount'))['amount__sum'] or 0
-            sent_insecticides_amount = InsecticideExchange.objects.filter(insecticide=insecticides_yearly_remainder.insecticide,
+            insecticide_remainder_dict['sent_insecticide_amount'] = InsecticideExchange.objects.filter(insecticide=insecticides_yearly_remainder.insecticide,
                                                                           is_approved=True,
                                                                           sender_region=insecticides_yearly_remainder.region,
                                                                           given_date__gte=insecticides_yearly_remainder.year).aggregate(Sum('amount'))['amount__sum'] or 0
-            received_insecticides_amount = InsecticideExchange.objects.filter(insecticide=insecticides_yearly_remainder.insecticide,
+            insecticide_remainder_dict['received_insecticide_amount'] = InsecticideExchange.objects.filter(insecticide=insecticides_yearly_remainder.insecticide,
                                                                               is_approved=True,
                                                                               receiver_region=insecticides_yearly_remainder.region,
                                                                               given_date__gte=insecticides_yearly_remainder.year).aggregate(Sum('amount'))['amount__sum'] or 0
             insecticide_remainder_dict['region'] = RegionPartialSerializer(insecticides_yearly_remainder.region).data
             insecticide_remainder_dict['insecticide_info'] = InsecticideSerializer(insecticides_yearly_remainder.insecticide).data
-            insecticide_remainder_dict['insecticide_remainder'] = insecticides_yearly_remainder.amount + \
-                                                                  received_insecticides_amount - \
-                                                                  spent_insecticides_amount - sent_insecticides_amount
+            insecticide_remainder_dict['insecticide_remainder'] = insecticides_yearly_remainder.amount + insecticide_remainder_dict['received_insecticide_amount'] - insecticide_remainder_dict['spent_insecticide_amount'] - insecticide_remainder_dict['sent_insecticide_amount']
 
             insecticides_remainder_list.append(insecticide_remainder_dict)
-            insecticide_remainder_dict = {"region": None, "insecticide_info": None, "insecticide_remainder": None}
-            print('insecticide_remainder_dict')
-            print(insecticide_remainder_dict)
-            print('test_list')
-            print(test_list)
-            if region and region == insecticides_yearly_remainder.region:
-                test_list.append(insecticide_remainder_dict)
-            else:
-                if region:
-                    main_test_list.append({"region": region.name_ru, "insecticides": test_list})
-                test_list = [insecticide_remainder_dict]
-                region = insecticides_yearly_remainder.region
+            insecticide_remainder_dict = {"region": None, "insecticide_info": None, "insecticide_remainder": None,
+                                          "spent_insecticide_amount": None, "sent_insecticide_amount": None,
+                                          "received_insecticide_amount": None}
 
-        # for key, value in groupby(insecticides_remainder_list, itemgetter('region')):
-        #     print(key)
-        #     print(list(value))
-        print('main_test_list')
-        print(type(main_test_list))
-        print(main_test_list)
         return Response(insecticides_remainder_list)
 
 
@@ -277,17 +258,20 @@ class SprayMonitoringActAlbumCreation(APIView):
     def post(self, request, spray_monitoring_act_pk, format=None):
         get_object_or_404(SprayMonitoringAct, pk=spray_monitoring_act_pk, fumigator=request.user, status=SprayMonitoringStatus.SAVED)
         errors = []
-        for image in request.FILES.getlist('album'):
-            serializer = SprayMonitoringActAlbumSerializer(data={'image': image, 'spray_monitoring_act': spray_monitoring_act_pk})
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                errors.append(serializer.errors)
+        if request.FILES.getlist('album'):
+            for image in request.FILES.getlist('album'):
+                serializer = SprayMonitoringActAlbumSerializer(data={'image': image, 'spray_monitoring_act': spray_monitoring_act_pk})
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    errors.append(serializer.errors)
 
-        if errors:
-            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            if errors:
+                return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response(status=status.HTTP_201_CREATED)
         else:
-            return Response(status=status.HTTP_201_CREATED)
+            return Response({"album": ["This field may not be null."]}, status=status.HTTP_404_NOT_FOUND)
 
 
 class SprayMonitoringActAlbumDeletion(APIView):

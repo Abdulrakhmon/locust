@@ -88,8 +88,8 @@ class CustomUserAdmin(UserAdmin):
         ]
     ]
 
-    def has_delete_permission(self, request, obj=None):
-        return False
+    # def has_delete_permission(self, request, obj=None):
+    #     return False
 
 
 admin.site.register(User, CustomUserAdmin)

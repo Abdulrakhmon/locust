@@ -173,12 +173,16 @@ class SurveyAlbumCreation(APIView):
     def post(self, request, survey_pk, format=None):
         get_object_or_404(Survey, pk=survey_pk, agronomist=request.user, status=SurveyStatus.SAVED)
         errors = []
-        for image in request.FILES.getlist('album'):
-            serializer = SurveyAlbumSerializer(data={'image': image, 'survey': survey_pk})
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                errors.append(serializer.errors)
+        print("request.FILES.getlist('album')")
+        if request.FILES.getlist('album'):
+            for image in request.FILES.getlist('album'):
+                serializer = SurveyAlbumSerializer(data={'image': image, 'survey': survey_pk})
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    errors.append(serializer.errors)
+        else:
+            return Response({"album": ["This field may not be null."]}, status=status.HTTP_404_NOT_FOUND)
 
         if errors:
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
