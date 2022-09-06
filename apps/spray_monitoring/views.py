@@ -1,10 +1,6 @@
-import json
 from datetime import datetime
-from itertools import groupby
-from operator import itemgetter
 
 from django.db.models import Q, Sum
-from django.shortcuts import render
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
@@ -12,8 +8,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from common.models import Region
 from common.permissions import CreateOrReadOnly, EditOrReadOnly
-from common.serializer import RegionSerializer, RegionPartialSerializer
+from common.serializer import RegionPartialSerializer
 from spray_monitoring.choices import SprayMonitoringStatus
 from spray_monitoring.models import ActiveSubstance, Formulation, Insecticide, Sprayer, ProtectiveClothing, \
     EmptyContainersStatus, SprayMonitoringAct, SprayMonitoringActAlbum, SpentInsecticide, InsecticidesYearlyRemainder, \
@@ -68,10 +65,15 @@ class EmptyContainersStatusList(APIView):
 class InsecticidesRemainderList(APIView):
     def get(self, request, format=None):
         year = f"{datetime.today().year}-01-01"
-        insecticides_remainder_list = []
-        insecticide_remainder_dict = {"region": None, "insecticide_info": None, "insecticide_remainder": None,
-                                      "spent_insecticide_amount": None, "sent_insecticide_amount": None,
-                                      "received_insecticide_amount": None}
+
+        insecticides_remainder_list_grouped_by_region = {}
+
+        for region in Region.objects.all():
+            insecticides_remainder_list_grouped_by_region[str(region.pk)] = []
+
+        insecticide_remainder_dict = {"insecticide_info": None, "spent_insecticide_amount": None,
+                                      "sent_insecticide_amount": None, "received_insecticide_amount": None,
+                                      "insecticide_remainder": None}
 
         insecticides_yearly_remainders = InsecticidesYearlyRemainder.objects.filter(year=year)
 
@@ -79,10 +81,7 @@ class InsecticidesRemainderList(APIView):
             insecticides_yearly_remainders = insecticides_yearly_remainders.filter(region=request.user.region)
         else:
             insecticides_yearly_remainders = insecticides_yearly_remainders.order_by('region')
-
         for insecticides_yearly_remainder in insecticides_yearly_remainders:
-            print('insecticides_yearly_remainder.region.name_ru')
-            print(insecticides_yearly_remainder.region.name_ru)
             insecticide_remainder_dict['spent_insecticide_amount'] = SpentInsecticide.objects.filter(insecticide=insecticides_yearly_remainder.insecticide,
                                                                         spray_monitoring_act__status=SprayMonitoringStatus.APPROVED,
                                                                         spray_monitoring_act__district__region=insecticides_yearly_remainder.region,
@@ -95,16 +94,15 @@ class InsecticidesRemainderList(APIView):
                                                                               is_approved=True,
                                                                               receiver_region=insecticides_yearly_remainder.region,
                                                                               given_date__gte=insecticides_yearly_remainder.year).aggregate(Sum('amount'))['amount__sum'] or 0
-            insecticide_remainder_dict['region'] = RegionPartialSerializer(insecticides_yearly_remainder.region).data
             insecticide_remainder_dict['insecticide_info'] = InsecticideSerializer(insecticides_yearly_remainder.insecticide).data
             insecticide_remainder_dict['insecticide_remainder'] = insecticides_yearly_remainder.amount + insecticide_remainder_dict['received_insecticide_amount'] - insecticide_remainder_dict['spent_insecticide_amount'] - insecticide_remainder_dict['sent_insecticide_amount']
 
-            insecticides_remainder_list.append(insecticide_remainder_dict)
-            insecticide_remainder_dict = {"region": None, "insecticide_info": None, "insecticide_remainder": None,
-                                          "spent_insecticide_amount": None, "sent_insecticide_amount": None,
-                                          "received_insecticide_amount": None}
+            insecticides_remainder_list_grouped_by_region[str(insecticides_yearly_remainder.region.pk)].append(insecticide_remainder_dict)
+            insecticide_remainder_dict = {"insecticide_info": None, "spent_insecticide_amount": None,
+                                          "sent_insecticide_amount": None, "received_insecticide_amount": None,
+                                          "insecticide_remainder": None}
 
-        return Response(insecticides_remainder_list)
+        return Response(insecticides_remainder_list_grouped_by_region)
 
 
 class SprayMonitoringActList(APIView, LimitOffsetPagination):
