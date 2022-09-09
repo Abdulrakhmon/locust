@@ -62,6 +62,9 @@ class VegetationTypeSerializer(serializers.ModelSerializer):
 class SpentInsecticideSerializer(serializers.ModelSerializer):
     spray_monitoring_act = serializers.PrimaryKeyRelatedField(queryset=SprayMonitoringAct.objects.all(), many=False, write_only=True)
 
+    insecticide_detail = InsecticideSerializer(read_only=True, source='insecticide', many=False)
+    insecticide = serializers.PrimaryKeyRelatedField(queryset=Insecticide.objects.all(), many=False, write_only=True)
+
     class Meta:
         exclude = ['created_at', 'updated_at']
         model = SpentInsecticide

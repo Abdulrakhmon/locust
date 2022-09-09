@@ -69,7 +69,7 @@ class InsecticidesRemainderList(APIView):
         insecticides_remainder_list_grouped_by_region = {}
 
         for region in Region.objects.all():
-            insecticides_remainder_list_grouped_by_region[str(region.pk)] = []
+            insecticides_remainder_list_grouped_by_region[region.pk] = []
 
         insecticide_remainder_dict = {"insecticide_info": None, "spent_insecticide_amount": None,
                                       "sent_insecticide_amount": None, "received_insecticide_amount": None,
@@ -97,7 +97,7 @@ class InsecticidesRemainderList(APIView):
             insecticide_remainder_dict['insecticide_info'] = InsecticideSerializer(insecticides_yearly_remainder.insecticide).data
             insecticide_remainder_dict['insecticide_remainder'] = insecticides_yearly_remainder.amount + insecticide_remainder_dict['received_insecticide_amount'] - insecticide_remainder_dict['spent_insecticide_amount'] - insecticide_remainder_dict['sent_insecticide_amount']
 
-            insecticides_remainder_list_grouped_by_region[str(insecticides_yearly_remainder.region.pk)].append(insecticide_remainder_dict)
+            insecticides_remainder_list_grouped_by_region[insecticides_yearly_remainder.region.pk].append(insecticide_remainder_dict)
             insecticide_remainder_dict = {"insecticide_info": None, "spent_insecticide_amount": None,
                                           "sent_insecticide_amount": None, "received_insecticide_amount": None,
                                           "insecticide_remainder": None}

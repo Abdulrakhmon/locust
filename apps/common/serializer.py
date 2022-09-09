@@ -4,7 +4,7 @@ from rest_framework import serializers
 from rest_framework_gis.serializers import GeoModelSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from common.models import Country, District, Unit, Region, User
+from common.models import Country, District, Unit, Region
 
 
 class CountrySerializer(serializers.ModelSerializer):

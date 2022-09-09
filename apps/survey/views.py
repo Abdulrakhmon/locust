@@ -147,8 +147,6 @@ class SurveyList(APIView, LimitOffsetPagination):
         return self.get_paginated_response(serializer.data)
 
     def post(self, request, format=None):
-        print('SurveyList: request.data')
-        print(request.data)
         serializer = SurveySerializer(data=request.data)
         if serializer.is_valid():
             try:
@@ -173,7 +171,6 @@ class SurveyAlbumCreation(APIView):
     def post(self, request, survey_pk, format=None):
         get_object_or_404(Survey, pk=survey_pk, agronomist=request.user, status=SurveyStatus.SAVED)
         errors = []
-        print("request.FILES.getlist('album')")
         if request.FILES.getlist('album'):
             for image in request.FILES.getlist('album'):
                 serializer = SurveyAlbumSerializer(data={'image': image, 'survey': survey_pk})
