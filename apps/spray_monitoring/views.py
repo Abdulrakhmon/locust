@@ -14,10 +14,10 @@ from common.serializer import RegionPartialSerializer
 from spray_monitoring.choices import SprayMonitoringStatus
 from spray_monitoring.models import ActiveSubstance, Formulation, Insecticide, Sprayer, ProtectiveClothing, \
     EmptyContainersStatus, SprayMonitoringAct, SprayMonitoringActAlbum, SpentInsecticide, InsecticidesYearlyRemainder, \
-    InsecticideExchange
+    InsecticideExchange, VegetationType, DamageLevel
 from spray_monitoring.serializer import ActiveSubstanceSerializer, FormulationSerializer, InsecticideSerializer, \
     SprayerSerializer, ProtectiveClothingSerializer, EmptyContainersStatusSerializer, SprayMonitoringActSerializer, \
-    SpentInsecticideSerializer, SprayMonitoringActAlbumSerializer
+    SpentInsecticideSerializer, SprayMonitoringActAlbumSerializer, DamageLevelSerializer, VegetationTypeSerializer
 
 
 class ActiveSubstanceList(APIView):
@@ -38,6 +38,20 @@ class InsecticideList(APIView):
     def get(self, request, format=None):
         insecticides = Insecticide.objects.all()
         serializer = InsecticideSerializer(insecticides, many=True)
+        return Response(serializer.data)
+
+
+class VegetationTypeList(APIView):
+    def get(self, request, format=None):
+        vegetation_types = VegetationType.objects.all()
+        serializer = VegetationTypeSerializer(vegetation_types, many=True)
+        return Response(serializer.data)
+
+
+class DamageLevelList(APIView):
+    def get(self, request, format=None):
+        damage_levels = DamageLevel.objects.all()
+        serializer = DamageLevelSerializer(damage_levels, many=True)
         return Response(serializer.data)
 
 

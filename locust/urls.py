@@ -24,7 +24,7 @@ from rest_framework_swagger.views import get_swagger_view
 
 from common.views import CountryList, RegionList, DistrictList, CustomTokenObtainPairView
 from spray_monitoring.views import ActiveSubstanceList, FormulationList, InsecticideList, SprayerList, \
-    ProtectiveClothingList, EmptyContainersStatusList
+    ProtectiveClothingList, EmptyContainersStatusList, VegetationTypeList, DamageLevelList
 from survey.views import FledgingList, BehaviourList, EggHatchingList, NaturalEnemyList, LocustAppearanceList, \
     LocustAgeList, LocustStageList, LocustList, VegetationCoverList, VegetationList, BiotopeList, SwarmDensityList
 
@@ -36,7 +36,7 @@ urlpatterns = [
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('v1/documentation/', swagger_schema_view),
-    path('v2/documentation/', include_docs_urls(title='Blog API')),
+    path('v2/documentation/', include_docs_urls(title='Locust API')),
     path('schema/', schema_view),
     path('dictionary/countries/', CountryList.as_view()),
     path('dictionary/regions/', RegionList.as_view()),
@@ -44,6 +44,8 @@ urlpatterns = [
     path('dictionary/active-substances/', ActiveSubstanceList.as_view()),
     path('dictionary/formulations/', FormulationList.as_view()),
     path('dictionary/insecticides/', InsecticideList.as_view()),
+    path('dictionary/vegetation-types/', VegetationTypeList.as_view()),
+    path('dictionary/damage-levels/', DamageLevelList.as_view()),
     path('dictionary/sprayers/', SprayerList.as_view()),
     path('dictionary/protective-clothing/', ProtectiveClothingList.as_view()),
     path('dictionary/empty-containers-statuses/', EmptyContainersStatusList.as_view()),

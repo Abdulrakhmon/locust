@@ -59,6 +59,12 @@ class VegetationTypeSerializer(serializers.ModelSerializer):
         model = VegetationType
 
 
+class DamageLevelSerializer(serializers.ModelSerializer):
+    class Meta:
+        exclude = ['created_at', 'updated_at']
+        model = DamageLevel
+
+
 class SpentInsecticideSerializer(serializers.ModelSerializer):
     spray_monitoring_act = serializers.PrimaryKeyRelatedField(queryset=SprayMonitoringAct.objects.all(), many=False, write_only=True)
 
@@ -86,7 +92,7 @@ class SprayMonitoringActSerializer(serializers.ModelSerializer):
     vegetation_type = serializers.PrimaryKeyRelatedField(queryset=VegetationType.objects.all(), many=False, write_only=True)
     vegetation_cover_detail = VegetationCoverSerializer(read_only=True, source='vegetation_cover')
     vegetation_cover = serializers.PrimaryKeyRelatedField(queryset=VegetationCover.objects.all(), many=False, write_only=True)
-    damage_level_detail = VegetationCoverSerializer(read_only=True, source='damage_level')
+    damage_level_detail = DamageLevelSerializer(read_only=True, source='damage_level')
     damage_level = serializers.PrimaryKeyRelatedField(queryset=DamageLevel.objects.all(), many=False, write_only=True)
     locust_age_detail = LocustAgeSerializer(read_only=True, source='locust_age')
     locust_detail = LocustSerializer(many=True, read_only=True, source='locust')
