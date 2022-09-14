@@ -165,8 +165,8 @@ class SprayMonitoringActList(APIView, LimitOffsetPagination):
     def post(self, request, format=None):
         serializer = SprayMonitoringActSerializer(data=request.data)
         if serializer.is_valid():
-            instance = serializer.save(fumigator=self.request.user, region=self.request.user.region)
             try:
+                instance = serializer.save(fumigator=self.request.user)
                 for spent_insecticide in request.data['spent_insecticides']:
                     spent_insecticide['spray_monitoring_act'] = instance.pk
                     spent_insecticide_serializer = SpentInsecticideSerializer(data=spent_insecticide)
