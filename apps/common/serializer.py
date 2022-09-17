@@ -63,4 +63,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
         data['user_detail'] = UserSerializer(self.user).data
+
+        # recording login time of users
+        import logging
+        logger = logging.getLogger('auth_logger')
+        logger.info(f"User['name': {data['user_detail']['name_uz']}, 'pin': {data['user_detail']['pin']}, 'request': Get access and refresh token]")
+
         return data

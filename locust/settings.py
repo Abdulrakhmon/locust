@@ -95,10 +95,10 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=77),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=77),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=int(env("ACCESS_TOKEN_LIFETIME"))),
+    'REFRESH_TOKEN_LIFETIME': timedelta(hours=int(env("REFRESH_TOKEN_LIFETIME"))),
 
-    'AUTH_HEADER_TYPES': ('Bearer', 'JWT',),
+    'AUTH_HEADER_TYPES': ('Bearer', 'JWT', ),
 }
 
 JWT_AUTH = {
@@ -178,3 +178,40 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'warning_logs_file_for_django_logger': {
+            'level': 'WARNING',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'django_warning.log'),
+            'formatter': 'verbose'
+        },
+        'info_logs_file_for_custom_auth_logger': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'auth_info.log'),
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['warning_logs_file_for_django_logger'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+        'auth_logger': {
+            'handlers': ['info_logs_file_for_custom_auth_logger'],
+            'level': 'INFO',
+            'propagate': False,
+        }
+    }
+}

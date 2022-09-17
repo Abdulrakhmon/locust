@@ -203,7 +203,7 @@ class SprayMonitoringActDetail(APIView):
         instance = self.get_object(pk=pk, request=request)
         serializer = SprayMonitoringActSerializer(instance, data=request.data)
         if serializer.is_valid():
-            serializer.save(region=self.request.user.region)
+            serializer.save()
             try:
                 for spent_insecticide in request.data['spent_insecticides']:
                     spent_insecticide['spray_monitoring_act'] = pk
