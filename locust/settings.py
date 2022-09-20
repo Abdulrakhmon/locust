@@ -194,8 +194,6 @@ LOGGING = {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'django_warning.log'),
             'when': 'midnight',
-            'delay': True,
-            'interval': 1,
             'formatter': 'verbose',
         },
         'info_logs_file_for_custom_auth_logger': {
@@ -203,8 +201,6 @@ LOGGING = {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'auth_info.log'),
             'when': 'midnight',
-            'delay': True,
-            'interval': 1,
             'formatter': 'verbose',
         },
     },
