@@ -193,13 +193,19 @@ LOGGING = {
             'level': 'WARNING',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'django_warning.log'),
-            'formatter': 'verbose'
+            'when': 'midnight',
+            'delay': True,
+            'interval': 1,
+            'formatter': 'verbose',
         },
         'info_logs_file_for_custom_auth_logger': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'auth_info.log'),
-            'formatter': 'verbose'
+            'when': 'midnight',
+            'delay': True,
+            'interval': 1,
+            'formatter': 'verbose',
         },
     },
     'loggers': {
@@ -215,3 +221,10 @@ LOGGING = {
         }
     }
 }
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379',
+#     }
+# }
