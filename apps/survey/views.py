@@ -107,8 +107,8 @@ class SurveyList(APIView, LimitOffsetPagination):
 
     """
     get:
-    Query params for filter: survey_act_number,  survey_act_is_null(value=False, retrieve surveys do not have acts),
-    locust(id, ManyToMany: ?locust=1&locust=3), region(id)
+    Query params for filter: survey_act_number,  survey_act_is_null(False -> retrieve surveys do not have acts; True -> retrieve surveys which have acts),
+    locust(id, ManyToMany: ?locust=1&locust=3), region(id),
     locust_appearance(id, ManyToMany: ?locust_appearance=1&locust_appearance=3),
     approved_at_gte<=>approved_at_lte(YYYY-MM-DD), act_given_date_gte<=>act_given_date_lte(YYYY-MM-DD),
     """
@@ -124,8 +124,11 @@ class SurveyList(APIView, LimitOffsetPagination):
         if query_strings.get('survey_act_number'):
             surveys = surveys.filter(act__number=query_strings.get('survey_act_number'))
         else:
-            if query_strings.get('survey_act_is_null') and query_strings.get('survey_act_is_null') == 'False':
-                surveys = surveys.filter(act__isnull=False)
+            if query_strings.get('survey_act_is_null'):
+                if query_strings.get('survey_act_is_null') == 'False':
+                    surveys = surveys.filter(act__isnull=False)
+                elif query_strings.get('survey_act_is_null') == 'True':
+                    surveys = surveys.filter(act__isnull=True)
 
             if query_strings.getlist('locust'):
                 surveys = surveys.filter(locust__in=query_strings.getlist('locust'))
