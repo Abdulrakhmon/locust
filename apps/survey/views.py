@@ -104,16 +104,19 @@ class SwarmDensityList(APIView):
 
 
 class SurveyList(APIView, LimitOffsetPagination):
+
     """
-    List, create a survey instance.
+    get:
+    Query params for filter: survey_act_number,  survey_act_is_null(value=False, retrieve surveys do not have acts),
+    locust(id, ManyToMany: ?locust=1&locust=3), region(id)
+    locust_appearance(id, ManyToMany: ?locust_appearance=1&locust_appearance=3),
+    approved_at_gte<=>approved_at_lte(YYYY-MM-DD), act_given_date_gte<=>act_given_date_lte(YYYY-MM-DD),
     """
     permission_classes = [CreateOrReadOnly]
 
     def get(self, request, format=None):
         query_strings = request.GET
         user = request.user
-
-        # start_queries = len(connection.queries)
 
         surveys = Survey.objects.filter(Q(status=SurveyStatus.APPROVED) | Q(agronomist=user))
         # surveys = Survey.objects.select_related('locust_appearance_detail_info', 'act').prefetch_related('album')
@@ -124,25 +127,25 @@ class SurveyList(APIView, LimitOffsetPagination):
             if query_strings.get('survey_act_is_null') and query_strings.get('survey_act_is_null') == 'False':
                 surveys = surveys.filter(act__isnull=False)
 
+            if query_strings.getlist('locust'):
+                surveys = surveys.filter(locust__in=query_strings.getlist('locust'))
+
             if query_strings.get('survey_beginning_of_interval') and query_strings.get('survey_end_of_interval'):
-                surveys = surveys.filter(approved_at__gte=query_strings.get('survey_beginning_of_interval'),
-                                         approved_at__lte=str(query_strings.get('survey_end_of_interval') + ' 23:59:59'))
+                surveys = surveys.filter(approved_at__gte=query_strings.get('approved_at_gte'),
+                                         approved_at__lte=str(query_strings.get('approved_at_lte') + ' 23:59:59'))
 
             if query_strings.get('survey_act_beginning_of_interval') and query_strings.get('survey_act_end_of_interval'):
                 surveys = surveys.filter(act__isnull=False,
-                                         act__given_date__gte=query_strings.get('survey_act_beginning_of_interval'),
-                                         act__given_date__lte=str(query_strings.get('survey_act_end_of_interval')))
+                                         act__given_date__gte=query_strings.get('act_given_date_gte'),
+                                         act__given_date__lte=str(query_strings.get('act_given_date_lte')))
 
             if user.region:
                 surveys = surveys.filter(district__region=user.region)
-            elif query_strings.get('region_pk'):
-                surveys = surveys.filter(district__region__id=query_strings.get('region_pk'))
+            elif query_strings.get('region'):
+                surveys = surveys.filter(district__region__id=query_strings.get('region'))
 
-        surveys = self.paginate_queryset(surveys, request, view=self)
+        surveys = self.paginate_queryset(surveys.distinct('pk'), request, view=self)
         serializer = SurveySerializer(surveys, many=True)
-
-        # end_queries = len(connection.queries)
-        # print(f"Number of Queries : {end_queries} - {start_queries} = {end_queries - start_queries}")
 
         return self.get_paginated_response(serializer.data)
 
@@ -244,9 +247,6 @@ class SurveyDetail(APIView):
 
 
 class SurveyActCreation(APIView):
-    """
-    Retrieve, update or delete a survey instance.
-    """
     permission_classes = [CreateOrReadOnly]
 
     def post(self, request, survey_pk, format=None):

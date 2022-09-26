@@ -265,3 +265,31 @@ class SprayMonitoringActAlbum(models.Model):
 
     class Meta:
         db_table = 'spray_monitoring_act_album'
+
+
+class SprayMonitoringEfficiency(models.Model):
+    spray_monitoring_act = models.ForeignKey(SprayMonitoringAct, on_delete=models.CASCADE, related_name='efficiencies')
+    efficiency = models.DecimalField(max_digits=6, decimal_places=3, verbose_name='Ishlovning biologik samaradorligi')
+    period_in_hours = models.PositiveSmallIntegerField(verbose_name='Ishlovdan keyin otgan vaqt (soat)')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'{self.efficiency} % {self.period_in_hours} soatdan song'
+
+    class Meta:
+        db_table = 'spray_monitoring_efficiency'
+
+
+class SprayMonitoringEfficiencyAct(models.Model):
+    spray_monitoring_act = models.OneToOneField(SprayMonitoringAct, on_delete=models.CASCADE, related_name='efficiency_act')
+    number = models.CharField(max_length=11)
+    given_date = models.DateField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.number
+
+    class Meta:
+        db_table = 'spray_monitoring_efficiency_act'

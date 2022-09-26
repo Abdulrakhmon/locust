@@ -91,14 +91,15 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 3,
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',    # when swagger installed and  <<Exception Value: 'AutoSchema' object has no attribute 'get_link'>> occured
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    # when swagger installed and  <<Exception Value: 'AutoSchema' object has no attribute 'get_link'>> occured
 }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=int(env("ACCESS_TOKEN_LIFETIME"))),
     'REFRESH_TOKEN_LIFETIME': timedelta(hours=int(env("REFRESH_TOKEN_LIFETIME"))),
 
-    'AUTH_HEADER_TYPES': ('Bearer', 'JWT', ),
+    'AUTH_HEADER_TYPES': ('Bearer', 'JWT',),
 }
 
 JWT_AUTH = {
@@ -193,7 +194,7 @@ LOGGING = {
             'level': 'WARNING',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(BASE_DIR, 'logs', 'django_warning.log'),
-            'when': 'midnight',
+            'when': 'midnight',  # default hour,
             'formatter': 'verbose',
         },
         'info_logs_file_for_custom_auth_logger': {
@@ -218,9 +219,9 @@ LOGGING = {
     }
 }
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-#         'LOCATION': 'redis://127.0.0.1:6379',
-#     }
-# }
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379',
+    }
+}

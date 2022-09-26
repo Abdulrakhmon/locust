@@ -138,7 +138,7 @@ class SurveyActInline(admin.TabularInline):
 @admin.register(Survey)
 class SurveyAdmin(admin.ModelAdmin):
     inlines = [SurveyAlbumInline, LocustAppearanceDetailInfoInline, SurveyActInline]
-    list_display = ['territory_name', 'agronomist', 'created_at', 'updated_at']
+    list_display = ['territory_name', 'agronomist', 'status', 'created_at', 'updated_at']
     search_fields = ['territory_name']
 
     # def has_delete_permission(self, request, obj=None):

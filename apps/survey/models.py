@@ -228,7 +228,7 @@ class Survey(models.Model):
     temperature = models.CharField(max_length=8, verbose_name='Havo harorati')
     wind = models.CharField(max_length=8, verbose_name='Shamol')
     locust_appearance = models.ManyToManyField(LocustAppearance, related_name='+', verbose_name='Chigirtkaning mavjudligi')
-    locusts = models.ManyToManyField(Locust, related_name='+')
+    locust = models.ManyToManyField(Locust, related_name='+')
     damaged_area_in_ha = models.DecimalField(max_digits=10, decimal_places=4, verbose_name='Tarqalgan maydoni')
     note = models.TextField()
     status = models.IntegerField(choices=SurveyStatus.choices, default=SurveyStatus.SAVED)

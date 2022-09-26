@@ -44,7 +44,9 @@ class CreateOrReadOnly(permissions.BasePermission):
             if view.get_view_name() in ['Survey List', 'Survey Detail', 'Survey Act Creation', 'Survey Album Creation']:
                 groups_read_only = ['Republic Manager', 'Region Manager', 'Agronomist', 'Fumigator']
                 groups_can_create = ['Agronomist']
-            elif view.get_view_name() in ['Spray Monitoring Act List', 'Spray Monitoring Act Album Creation']:
+            elif view.get_view_name() in ['Spray Monitoring Act List', 'Spray Monitoring Act Album Creation',
+                                          'Spray Monitoring Efficiency Creation',
+                                          'Spray Monitoring Efficiency Act Creation']:
                 groups_read_only = ['Republic Manager', 'Region Manager', 'Agronomist', 'Fumigator']
                 groups_can_create = ['Fumigator']
 

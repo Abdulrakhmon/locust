@@ -14,10 +14,11 @@ from common.serializer import RegionPartialSerializer
 from spray_monitoring.choices import SprayMonitoringStatus
 from spray_monitoring.models import ActiveSubstance, Formulation, Insecticide, Sprayer, ProtectiveClothing, \
     EmptyContainersStatus, SprayMonitoringAct, SprayMonitoringActAlbum, SpentInsecticide, InsecticidesYearlyRemainder, \
-    InsecticideExchange, VegetationType, DamageLevel
+    InsecticideExchange, VegetationType, DamageLevel, SprayMonitoringEfficiency, SprayMonitoringEfficiencyAct
 from spray_monitoring.serializer import ActiveSubstanceSerializer, FormulationSerializer, InsecticideSerializer, \
     SprayerSerializer, ProtectiveClothingSerializer, EmptyContainersStatusSerializer, SprayMonitoringActSerializer, \
-    SpentInsecticideSerializer, SprayMonitoringActAlbumSerializer, DamageLevelSerializer, VegetationTypeSerializer
+    SpentInsecticideSerializer, SprayMonitoringActAlbumSerializer, DamageLevelSerializer, VegetationTypeSerializer, \
+    SprayMonitoringEfficiencySerializer, SprayMonitoringEfficiencyActSerializer
 
 
 class ActiveSubstanceList(APIView):
@@ -120,8 +121,11 @@ class InsecticidesRemainderList(APIView):
 
 
 class SprayMonitoringActList(APIView, LimitOffsetPagination):
+
     """
-    List, create a survey instance.
+    get:
+    Query params for filter: number, damage_level(id), locust(id, ManyToMany: ?locust=1&locust=3),
+    region(id), given_date_gte<=>given_date_lte(YYYY-MM-DD)
     """
     permission_classes = [CreateOrReadOnly]
 
@@ -133,26 +137,23 @@ class SprayMonitoringActList(APIView, LimitOffsetPagination):
 
         spray_monitoring_acts = SprayMonitoringAct.objects.filter(Q(status=SprayMonitoringStatus.APPROVED) | Q(fumigator=user))
         # spray_monitoring_acts = SprayMonitoringAct.objects.prefetch_related('spent_insecticides', 'album')
+        if query_strings.get('number'):
+            spray_monitoring_acts = spray_monitoring_acts.filter(number=query_strings.get('number'))
+        else:
+            if query_strings.get('damage_level'):
+                spray_monitoring_acts = spray_monitoring_acts.filter(damage_level=query_strings.get('damage_level'))
 
-        # if query_strings.get('survey_act_number'):
-        #     spray_monitoring_acts = spray_monitoring_acts.filter(act__number=query_strings.get('survey_act_number'))
-        # else:
-        #     if query_strings.get('survey_act_is_null') and query_strings.get('survey_act_is_null') == 'False':
-        #         spray_monitoring_acts = spray_monitoring_acts.filter(act__isnull=False)
-        #
-        #     if query_strings.get('survey_beginning_of_interval') and query_strings.get('survey_end_of_interval'):
-        #         spray_monitoring_acts = spray_monitoring_acts.filter(approved_at__gte=query_strings.get('survey_beginning_of_interval'),
-        #                                  approved_at__lte=str(query_strings.get('survey_end_of_interval') + ' 23:59:59'))
-        #
-        #     if query_strings.get('survey_act_beginning_of_interval') and query_strings.get('survey_act_end_of_interval'):
-        #         spray_monitoring_acts = spray_monitoring_acts.filter(act__isnull=False,
-        #                                  act__approved_at__gte=query_strings.get('survey_act_beginning_of_interval'),
-        #                                  act__approved_at__lte=str(query_strings.get('survey_act_end_of_interval') + ' 23:59:59'))
-        #
-        #     if user.region:
-        #         spray_monitoring_acts = spray_monitoring_acts.filter(district__region=user.region)
-        #     elif query_strings.get('region_pk'):
-        #         spray_monitoring_acts = spray_monitoring_acts.filter(district__region__id=query_strings.get('region_pk'))
+            if query_strings.getlist('locust'):
+                spray_monitoring_acts = spray_monitoring_acts.filter(locust__in=query_strings.getlist('locust'))
+
+            if query_strings.get('given_date_gte') and query_strings.get('given_date_gte'):
+                spray_monitoring_acts = spray_monitoring_acts.filter(given_date__gte=query_strings.get('given_date_gte'),
+                                                                     given_date__lte=str(query_strings.get('given_date_lte')))
+
+            if user.region:
+                spray_monitoring_acts = spray_monitoring_acts.filter(district__region=user.region)
+            elif query_strings.get('region'):
+                spray_monitoring_acts = spray_monitoring_acts.filter(district__region__id=query_strings.get('region'))
 
         spray_monitoring_acts = self.paginate_queryset(spray_monitoring_acts, request, view=self)
         serializer = SprayMonitoringActSerializer(spray_monitoring_acts, many=True)
@@ -190,7 +191,7 @@ class SprayMonitoringActDetail(APIView):
     permission_classes = [EditOrReadOnly]
 
     def get_object(self, pk, request):
-        instance = get_object_or_404(SprayMonitoringAct, pk=pk)
+        instance = get_object_or_404(SprayMonitoringAct, pk=pk, spent_insecticides__isnull=False)   # spent_insecticides is required
         self.check_object_permissions(request=request, obj=instance)  # beacuse of APIView, has_object_permission is checked manually
         return instance
 
@@ -294,3 +295,66 @@ class SprayMonitoringActAlbumDeletion(APIView):
             album_image.image.delete()
         album_image.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SprayMonitoringEfficiencyCreation(APIView):
+    permission_classes = [CreateOrReadOnly]
+
+    def post(self, request, spray_monitoring_act_pk, format=None):
+        spray_monitoring_act = get_object_or_404(SprayMonitoringAct, pk=spray_monitoring_act_pk, fumigator=request.user,
+                                                 status=SprayMonitoringStatus.APPROVED, efficiency_act__isnull=True)
+        try:
+            serializer = SprayMonitoringEfficiencySerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(spray_monitoring_act=spray_monitoring_act)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response(e, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SprayMonitoringEfficiencyDeletion(APIView):
+
+    def delete(self, request, pk, format=None):
+        instance = get_object_or_404(SprayMonitoringEfficiency, pk=pk, spray_monitoring_act__fumigator=request.user,
+                                     status=SprayMonitoringStatus.APPROVED, spray_monitoring_act__efficiency_act__isnull=True)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SprayMonitoringEfficiencyActCreation(APIView):
+    """
+    Retrieve, update or delete a survey instance.
+    """
+    permission_classes = [CreateOrReadOnly]
+
+    def post(self, request, spray_monitoring_act_pk, format=None):
+        user = request.user
+        region = user.region
+
+        spray_monitoring_act = get_object_or_404(SprayMonitoringAct, pk=spray_monitoring_act_pk, fumigator=user,
+                                                 status=SprayMonitoringStatus.APPROVED, efficiencies__isnull=False,
+                                                 efficiency_act__isnull=True)
+
+        try:
+            this_year = int(datetime.now().strftime('%y'))
+            if int(region.pk) < 10:
+                first_four_digits = str(this_year) + '0' + str(region.pk)
+            else:
+                first_four_digits = str(this_year) + str(region.pk)
+
+            last_spray_monitoring_efficiency_act = SprayMonitoringEfficiencyAct.objects.filter(number__startswith=first_four_digits).order_by('number').last()
+
+            if last_spray_monitoring_efficiency_act:
+                number = str(int(last_spray_monitoring_efficiency_act.number) + 1)
+            else:
+                number = this_year * 1000000000 + int(region.pk) * 10000000 + 1
+            instance = SprayMonitoringEfficiencyAct.objects.create(
+                spray_monitoring_act=spray_monitoring_act,
+                number=number,
+            )
+
+            serializer = SprayMonitoringEfficiencyActSerializer(instance)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response(e, status=status.HTTP_400_BAD_REQUEST)

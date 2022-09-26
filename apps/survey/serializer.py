@@ -136,8 +136,8 @@ class SurveySerializer(serializers.ModelSerializer):
     album = SurveyAlbumSerializer(many=True, read_only=True)
     locust_appearance_detail_info = LocustAppearanceDetailInfoSerializer(read_only=True)
     act = SurveyActSerializer(read_only=True)
-    locusts_detail = LocustSerializer(many=True, read_only=True, source='locusts')
-    locusts = serializers.PrimaryKeyRelatedField(queryset=Locust.objects.all(), many=True, write_only=True)
+    locust_detail = LocustSerializer(many=True, read_only=True, source='locust')
+    locust = serializers.PrimaryKeyRelatedField(queryset=Locust.objects.all(), many=True, write_only=True)
     locust_appearance_detail = LocustAppearanceSerializer(many=True, read_only=True, source='locust_appearance')
     locust_appearance = serializers.PrimaryKeyRelatedField(queryset=LocustAppearance.objects.all(), many=True, write_only=True)
 

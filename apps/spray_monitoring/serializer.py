@@ -4,7 +4,8 @@ from rest_framework_gis.serializers import GeoModelSerializer
 from common.models import District
 from common.serializer import UserPartialSerializer, DistrictSerializer
 from spray_monitoring.models import ActiveSubstance, Formulation, Insecticide, Sprayer, ProtectiveClothing, \
-    EmptyContainersStatus, SprayMonitoringAct, VegetationType, DamageLevel, SprayMonitoringActAlbum, SpentInsecticide
+    EmptyContainersStatus, SprayMonitoringAct, VegetationType, DamageLevel, SprayMonitoringActAlbum, SpentInsecticide, \
+    SprayMonitoringEfficiency, SprayMonitoringEfficiencyAct
 from survey.models import VegetationCover, LocustAge, Locust, LocustStage
 from survey.serializer import VegetationCoverSerializer, LocustAgeSerializer, LocustSerializer, LocustStageSerializer
 
@@ -84,6 +85,18 @@ class SprayMonitoringActAlbumSerializer(serializers.ModelSerializer):
         model = SprayMonitoringActAlbum
 
 
+class SprayMonitoringEfficiencySerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ['efficiency', 'period_in_hours']
+        model = SprayMonitoringEfficiency
+
+
+class SprayMonitoringEfficiencyActSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ['number', 'given_date']
+        model = SprayMonitoringEfficiencyAct
+
+
 class SprayMonitoringActSerializer(serializers.ModelSerializer):
     district_detail = DistrictSerializer(read_only=True, source='district')
     district = serializers.PrimaryKeyRelatedField(queryset=District.objects.all(), many=False, write_only=True)
@@ -107,6 +120,8 @@ class SprayMonitoringActSerializer(serializers.ModelSerializer):
     empty_containers_status_detail = EmptyContainersStatusSerializer(many=True, read_only=True, source='empty_containers_status')
     empty_containers_status = serializers.PrimaryKeyRelatedField(queryset=EmptyContainersStatus.objects.all(), many=True, write_only=True)
     album = SprayMonitoringActAlbumSerializer(many=True, read_only=True)
+    efficiencies = SprayMonitoringEfficiencySerializer(many=True, read_only=True)
+    efficiency_act = SprayMonitoringEfficiencyActSerializer(many=False, read_only=True)
     spent_insecticides = SpentInsecticideSerializer(many=True, read_only=True)
 
     class Meta:

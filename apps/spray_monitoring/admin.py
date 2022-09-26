@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from spray_monitoring.models import ActiveSubstance, Formulation, Insecticide, InsecticidesYearlyRemainder, Sprayer, \
     ProtectiveClothing, EmptyContainersStatus, SprayMonitoringAct, SpentInsecticide, DamageLevel, VegetationType, \
-    SprayMonitoringActAlbum, InsecticideExchange
+    SprayMonitoringActAlbum, InsecticideExchange, SprayMonitoringEfficiency, SprayMonitoringEfficiencyAct
 
 
 @admin.register(ActiveSubstance)
@@ -109,11 +109,32 @@ class SpentInsecticideInline(admin.TabularInline):
     model = SpentInsecticide
 
 
+class SprayMonitoringEfficiencyInline(admin.TabularInline):
+    extra = 0
+    model = SprayMonitoringEfficiency
+    readonly_fields = ['efficiency', 'period_in_hours', 'created_at', 'updated_at']
+
+
+class SprayMonitoringEfficiencyActInline(admin.TabularInline):
+    extra = 0
+    model = SprayMonitoringEfficiencyAct
+    readonly_fields = ['number', 'given_date', 'created_at', 'updated_at']
+
+
 @admin.register(SprayMonitoringAct)
 class SprayMonitoringActAdmin(admin.ModelAdmin):
-    inlines = [SprayMonitoringActAlbumInline, SpentInsecticideInline]
+    inlines = [SprayMonitoringActAlbumInline, SpentInsecticideInline, SprayMonitoringEfficiencyInline, SprayMonitoringEfficiencyActInline]
     list_display = ['number', 'given_date', 'fumigator', 'created_at', 'updated_at']
     search_fields = ['number']
+
+    # def has_delete_permission(self, request, obj=None):
+    #     return False
+
+
+@admin.register(SprayMonitoringEfficiencyAct)
+class SprayMonitoringEfficiencyActAdmin(admin.ModelAdmin):
+    list_display = ['number', 'given_date', 'created_at', 'updated_at']
+    search_fields = ['spray_monitoring_act__number', 'number']
 
     # def has_delete_permission(self, request, obj=None):
     #     return False
