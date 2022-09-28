@@ -133,11 +133,11 @@ class SurveyList(APIView, LimitOffsetPagination):
             if query_strings.getlist('locust'):
                 surveys = surveys.filter(locust__in=query_strings.getlist('locust'))
 
-            if query_strings.get('survey_beginning_of_interval') and query_strings.get('survey_end_of_interval'):
+            if query_strings.get('approved_at_gte') and query_strings.get('approved_at_lte'):
                 surveys = surveys.filter(approved_at__gte=query_strings.get('approved_at_gte'),
                                          approved_at__lte=str(query_strings.get('approved_at_lte') + ' 23:59:59'))
 
-            if query_strings.get('survey_act_beginning_of_interval') and query_strings.get('survey_act_end_of_interval'):
+            if query_strings.get('act_given_date_gte') and query_strings.get('act_given_date_lte'):
                 surveys = surveys.filter(act__isnull=False,
                                          act__given_date__gte=query_strings.get('act_given_date_gte'),
                                          act__given_date__lte=str(query_strings.get('act_given_date_lte')))
