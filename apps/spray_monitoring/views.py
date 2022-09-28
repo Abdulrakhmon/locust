@@ -143,8 +143,8 @@ class SprayMonitoringActList(APIView, LimitOffsetPagination):
             if query_strings.get('damage_level'):
                 spray_monitoring_acts = spray_monitoring_acts.filter(damage_level=query_strings.get('damage_level'))
 
-            if query_strings.getlist('locust'):
-                spray_monitoring_acts = spray_monitoring_acts.filter(locust__in=query_strings.getlist('locust'))
+            if query_strings.getlist('locust[]'):
+                spray_monitoring_acts = spray_monitoring_acts.filter(locust__in=query_strings.getlist('locust[]'))
 
             if query_strings.get('given_date_gte') and query_strings.get('given_date_gte'):
                 spray_monitoring_acts = spray_monitoring_acts.filter(given_date__gte=query_strings.get('given_date_gte'),
