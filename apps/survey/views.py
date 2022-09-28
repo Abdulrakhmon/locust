@@ -130,10 +130,10 @@ class SurveyList(APIView, LimitOffsetPagination):
                 elif query_strings.get('survey_act_is_null') == 'True':
                     surveys = surveys.filter(act__isnull=True)
 
-            if query_strings.getlist('locust'):
+            if query_strings.getlist('locust[]'):
                 surveys = surveys.filter(locust__in=query_strings.getlist('locust'))
 
-            if query_strings.getlist('locust_appearance'):
+            if query_strings.getlist('locust_appearance[]'):
                 surveys = surveys.filter(locust_appearance__in=query_strings.getlist('locust_appearance'))
 
             if query_strings.get('approved_at_gte') and query_strings.get('approved_at_lte'):
