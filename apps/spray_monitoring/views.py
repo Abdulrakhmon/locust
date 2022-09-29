@@ -155,7 +155,7 @@ class SprayMonitoringActList(APIView, LimitOffsetPagination):
             elif query_strings.get('region'):
                 spray_monitoring_acts = spray_monitoring_acts.filter(district__region__id=query_strings.get('region'))
 
-        spray_monitoring_acts = self.paginate_queryset(spray_monitoring_acts.distinct('pk'), request, view=self)
+        spray_monitoring_acts = self.paginate_queryset(spray_monitoring_acts.order_by('pk').distinct('pk'), request, view=self)
         serializer = SprayMonitoringActSerializer(spray_monitoring_acts, many=True)
 
         # end_queries = len(connection.queries)
