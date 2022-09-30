@@ -1,6 +1,8 @@
 from datetime import datetime
 
 from django.db.models import Q, Sum
+# from django.utils.decorators import method_decorator
+# from django.views.decorators.cache import cache_page
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import LimitOffsetPagination
@@ -10,7 +12,6 @@ from rest_framework.views import APIView
 
 from common.models import Region
 from common.permissions import CreateOrReadOnly, EditOrReadOnly
-from common.serializer import RegionPartialSerializer
 from spray_monitoring.choices import SprayMonitoringStatus
 from spray_monitoring.models import ActiveSubstance, Formulation, Insecticide, Sprayer, ProtectiveClothing, \
     EmptyContainersStatus, SprayMonitoringAct, SprayMonitoringActAlbum, SpentInsecticide, InsecticidesYearlyRemainder, \
@@ -78,6 +79,8 @@ class EmptyContainersStatusList(APIView):
 
 
 class InsecticidesRemainderList(APIView):
+
+    # @method_decorator(cache_page(60 * 60 * 8))
     def get(self, request, format=None):
         year = f"{datetime.today().year}-01-01"
 
@@ -191,7 +194,7 @@ class SprayMonitoringActDetail(APIView):
     permission_classes = [EditOrReadOnly]
 
     def get_object(self, pk, request):
-        instance = get_object_or_404(SprayMonitoringAct, pk=pk, spent_insecticides__isnull=False)   # spent_insecticides is required
+        instance = get_object_or_404(SprayMonitoringAct, pk=pk)   # spent_insecticides is required
         self.check_object_permissions(request=request, obj=instance)  # beacuse of APIView, has_object_permission is checked manually
         return instance
 
