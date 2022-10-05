@@ -87,7 +87,7 @@ class SprayMonitoringActAlbumSerializer(serializers.ModelSerializer):
 
 class SprayMonitoringEfficiencySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ['efficiency', 'period_in_hours']
+        fields = ['id', 'efficiency', 'period_in_hours']
         model = SprayMonitoringEfficiency
 
 
