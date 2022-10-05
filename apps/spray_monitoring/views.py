@@ -320,7 +320,7 @@ class SprayMonitoringEfficiencyDeletion(APIView):
 
     def delete(self, request, pk, format=None):
         instance = get_object_or_404(SprayMonitoringEfficiency, pk=pk, spray_monitoring_act__fumigator=request.user,
-                                     status=SprayMonitoringStatus.APPROVED, spray_monitoring_act__efficiency_act__isnull=True)
+                                     spray_monitoring_act__efficiency_act__isnull=True)
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
