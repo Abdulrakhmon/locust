@@ -359,4 +359,4 @@ class SprayMonitoringEfficiencyActCreation(APIView):
             serializer = SprayMonitoringEfficiencyActSerializer(instance)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response(e, status=status.HTTP_400_BAD_REQUEST)
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
