@@ -27,7 +27,7 @@ def regions():
                 instance.save()
                 print(f'{instance.name_uz} is successfully updated.')
             except:
-                Region.objects.create(
+                instance = Region.objects.create(
                     id=region['id'],
                     country=uzb,
                     name_uz=region['name_uz'],
