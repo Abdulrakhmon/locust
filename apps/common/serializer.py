@@ -16,13 +16,7 @@ class CountrySerializer(serializers.ModelSerializer):
 class RegionSerializer(GeoModelSerializer):
     class Meta:
         model = Region
-        exclude = ['created_at', 'updated_at']
-
-
-class RegionPartialSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Region
-        exclude = ['country', 'geometry', 'created_at', 'updated_at']
+        exclude = ['geometry', 'created_at', 'updated_at']
 
 
 class DistrictSerializer(GeoModelSerializer):

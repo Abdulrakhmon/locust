@@ -26,7 +26,7 @@ class Region(models.Model):
     name_uz = models.CharField(max_length=128, unique=True)
     name_en = models.CharField(max_length=128, unique=True)
     name_ru = models.CharField(max_length=128, unique=True)
-    geometry = models.PolygonField()
+    geometry = models.MultiPolygonField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -42,7 +42,7 @@ class District(models.Model):
     name_uz = models.CharField(max_length=128, unique=True)
     name_en = models.CharField(max_length=128, unique=True)
     name_ru = models.CharField(max_length=128, unique=True)
-    geometry = models.PolygonField()
+    geometry = models.MultiPolygonField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
