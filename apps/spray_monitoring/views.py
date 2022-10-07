@@ -336,8 +336,7 @@ class SprayMonitoringEfficiencyActCreation(APIView):
         region = user.region
 
         spray_monitoring_act = get_object_or_404(SprayMonitoringAct, pk=spray_monitoring_act_pk, fumigator=user,
-                                                 status=SprayMonitoringStatus.APPROVED, efficiencies__isnull=False,
-                                                 efficiency_act__isnull=True)
+                                                 status=SprayMonitoringStatus.APPROVED, efficiency_act__isnull=True)
 
         try:
             this_year = int(datetime.now().strftime('%y'))
