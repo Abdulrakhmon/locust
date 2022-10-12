@@ -4,7 +4,6 @@ __pycache__/
 media/
 venv/
 logs/
-migrations/
 locust/.env
 *.log
 *.pid
